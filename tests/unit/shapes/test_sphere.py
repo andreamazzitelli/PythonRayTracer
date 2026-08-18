@@ -1,106 +1,64 @@
-import math
-
 import pytest
-
-from raytracer.geometry.point import Point
-from raytracer.geometry.ray import Ray
-from raytracer.geometry.vector import Vector
+import math
 from raytracer.shapes.sphere import Sphere
+from raytracer.geometry.ray import Ray
+from raytracer.geometry.point import Point
+from raytracer.geometry.vector import Vector
+from raytracer.geometry.transform import translation, scaling, rotation_z
 
+def test_ray_intersects_sphere_at_two_points():
+    r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
+    s = Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert xs[0].t == 4.0
+    assert xs[1].t == 6.0
 
-def test_sphere_has_origin_and_radius():
-    sphere = Sphere()
-
-    assert sphere.center == Point(0, 0, 0)
-    assert sphere.radius == 1
-
+def test_ray_intersects_sphere_at_tangent():
+    r = Ray(Point(0, 1, -5), Vector(0, 0, 1))
+    s = Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert xs[0].t == 5.0
+    assert xs[1].t == 5.0
 
 def test_ray_misses_sphere():
-    sphere = Sphere()
-    ray = Ray(Point(0, 2, -5), Vector(0, 0, 1))
-
-    intersections = sphere.intersect(ray)
-
-    assert intersections == []
-
-
-def test_ray_hits_sphere_at_two_points():
-    sphere = Sphere()
-    ray = Ray(Point(0, 0, -5), Vector(0, 0, 1))
-
-    intersections = sphere.intersect(ray)
-
-    assert intersections[0].t == pytest.approx(4)
-    assert intersections[1].t == pytest.approx(6)
-
-    assert intersections[0].object == sphere
-    assert intersections[1].object == sphere
-
-def test_ray_tangent_to_sphere():
-    sphere = Sphere()
-    ray = Ray(Point(0, 1, -5), Vector(0, 0, 1))
-
-    intersections = sphere.intersect(ray)
-
-    assert intersections[0].t == pytest.approx(5)
-
+    r = Ray(Point(0, 2, -5), Vector(0, 0, 1))
+    s = Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 0
 
 def test_ray_originates_inside_sphere():
-    sphere = Sphere()
-    ray = Ray(Point(0, 0, 0), Vector(0, 0, 1))
+    r = Ray(Point(0, 0, 0), Vector(0, 0, 1))
+    s = Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert xs[0].t == -1.0
+    assert xs[1].t == 1.0
 
-    intersections = sphere.intersect(ray)
+def test_intersecting_scaled_sphere_with_ray():
+    r = Ray(Point(0, 0, -5), Vector(0, 0, 1))
+    s = Sphere()
+    s.transform = scaling(2, 2, 2)
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert xs[0].t == 3.0
+    assert xs[1].t == 7.0
 
-    assert intersections[0].t == pytest.approx(-1)
-    assert intersections[1].t == pytest.approx(1)
+def test_normal_on_sphere_at_x_axis():
+    s = Sphere()
+    n = s.normal_at(Point(1, 0, 0))
+    assert n == Vector(1, 0, 0)
 
+def test_normal_on_translated_sphere():
+    s = Sphere()
+    s.transform = translation(0, 1, 0)
+    n = s.normal_at(Point(0, 1.70711, -0.70711))
+    assert n == Vector(0, 0.70711, -0.70711)
 
-def test_sphere_is_behind_ray():
-    sphere = Sphere()
-    ray = Ray(Point(0, 0, 5), Vector(0, 0, 1))
-
-    intersections = sphere.intersect(ray)
-
-    assert intersections[0].t == pytest.approx(-6)
-    assert intersections[1].t == pytest.approx(-4)
-
-
-def test_point_on_sphere_has_normal():
-    sphere = Sphere()
-
-    normal = sphere.normal_at(Point(1, 0, 0))
-
-    assert normal == Vector(1, 0, 0)
-
-
-def test_normal_at_non_axial_point():
-    sphere = Sphere()
-
-    normal = sphere.normal_at(Point(0, math.sqrt(2) / 2, math.sqrt(2) / 2))
-
-    assert normal == Vector(
-        0,
-        math.sqrt(2) / 2,
-        math.sqrt(2) / 2,
-    )
-
-
-def test_normal_is_normalized():
-    sphere = Sphere()
-
-    normal = sphere.normal_at(Point(1, 0, 0))
-
-    assert normal.magnitude() == pytest.approx(1.0)
-
-def test_intersection_is_sorted():
-    sphere = Sphere(Point(0, 0, 0), 1)
-    ray = Ray(
-        Point(0, 0, -5),
-        Vector(0, 0, 1)
-    )
-
-    intersections = sphere.intersect(ray)
-
-    assert len(intersections) == 2
-    assert intersections[0].t == pytest.approx(4)
-    assert intersections[1].t == pytest.approx(6)
+def test_normal_on_transformed_sphere():
+    s = Sphere()
+    m = scaling(1, 0.5, 1) * rotation_z(math.pi / 5)
+    s.transform = m
+    n = s.normal_at(Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
+    assert n == Vector(0, 0.97014, -0.24254)

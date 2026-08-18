@@ -37,7 +37,7 @@ class Tuple:
             self.z * scalar,
             self.w * scalar
         )
-
+        
     def __rmul__(self, scalar: Union[float, int]) -> 'Tuple':
         """Handles scalar * Tuple multiplication (e.g., 3 * Vector)."""
         return self.__mul__(scalar)
@@ -65,3 +65,32 @@ class Tuple:
 
     def is_vector(self) -> bool:
         return self.w == 0.0
+
+    # --- Mathematics previously isolated to Vector ---
+
+    def magnitude(self) -> float:
+        """Calculates the length of the tuple."""
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2 + self.w**2)
+
+    def normalize(self) -> 'Tuple':
+        """Returns a unit tuple (magnitude of 1) in the same direction."""
+        mag = self.magnitude()
+        return Tuple(self.x / mag, self.y / mag, self.z / mag, self.w / mag)
+
+    def dot(self, other: 'Tuple') -> float:
+        """Calculates the dot product with another tuple."""
+        return (
+            self.x * other.x +
+            self.y * other.y +
+            self.z * other.z +
+            self.w * other.w
+        )
+
+    def cross(self, other: 'Tuple') -> 'Tuple':
+        """Calculates the cross product, returning a new orthogonal tuple (w=0)."""
+        return Tuple(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+            0.0
+        )
