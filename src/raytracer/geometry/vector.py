@@ -1,95 +1,78 @@
+from __future__ import annotations
+
 import math
 
-class Vector:
-    def __init__(self, x: float, y: float, z: float):
-        self.x = x
-        self.y = y
-        self.z = z
+from raytracer.geometry.tuple import Tuple
 
-    def __eq__(self, other):
 
-        if not isinstance(other, Vector):
-            return NotImplemented
+class Vector(Tuple):
+    def __init__(self, x: float, y: float, z: float) -> None:
+        super().__init__(x, y, z, 0.0)
 
+    def __add__(self, other: Vector) -> Vector:
+        return Vector(
+            self.x + other.x,
+            self.y + other.y,
+            self.z + other.z,
+        )
+
+    def __sub__(self, other: Vector) -> Vector:
+        return Vector(
+            self.x - other.x,
+            self.y - other.y,
+            self.z - other.z,
+        )
+
+    def __neg__(self) -> Vector:
+        return Vector(
+            -self.x,
+            -self.y,
+            -self.z,
+        )
+
+    def __mul__(self, scalar: float) -> Vector:
+        return Vector(
+            self.x * scalar,
+            self.y * scalar,
+            self.z * scalar,
+        )
+
+    def __rmul__(self, scalar: float) -> Vector:
+        return self * scalar
+
+    def __truediv__(self, scalar: float) -> Vector:
+        return Vector(
+            self.x / scalar,
+            self.y / scalar,
+            self.z / scalar,
+        )
+
+    def magnitude(self) -> float:
+        return math.sqrt(
+            self.x**2 +
+            self.y**2 +
+            self.z**2
+        )
+
+    def normalize(self) -> Vector:
+        magnitude = self.magnitude()
+
+        return Vector(
+            self.x / magnitude,
+            self.y / magnitude,
+            self.z / magnitude,
+        )
+
+    def dot(self, other: Vector) -> float:
         return (
-            math.isclose(self.x, other.x)
-            and math.isclose(self.y, other.y)
-            and math.isclose(self.z, other.z)
+            self.x * other.x +
+            self.y * other.y +
+            self.z * other.z
         )
 
-    def __add__(self, other):
-
-        if not isinstance(other, Vector):
-            return NotImplemented
-
+    def cross(self, other: Vector) -> Vector:
         return Vector(
-            self.x + other.x, 
-            self.y + other.y, 
-            self.z + other.z
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
         )
-        
-
-    def __sub__(self, other):
-        
-        if not isinstance(other, Vector):
-            return NotImplemented
-
-        return Vector(
-            self.x - other.x, 
-            self.y - other.y, 
-            self.z - other.z
-        )
-
-    def __neg__(self):
-        return Vector(
-            -self.x, 
-            -self.y, 
-            -self.z
-            )
-
-    def __mul__(self, other):
-        if (not isinstance(other, int)) and (not isinstance(other, float)):
-            return NotImplemented
-        
-        return Vector(
-            self.x*other, 
-            self.y*other, 
-            self.z*other
-        )
-        
-    def __rmul__(self, other):
-        return self.__mul__(other)
-        
-    def __truediv__(self, other):
-        if not isinstance(other, (int, float)):
-            return NotImplemented
-        
-        return Vector(
-            self.x/other, 
-            self.y/other, 
-            self.z/other
-        )
-
-    def magnitude(self):
-        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
-
-    def normalize(self):
-        return self / self.magnitude()
-
-    def dot(self, other):
-        if not isinstance(other, Vector):
-            return NotImplemented
-        return (self.x * other.x) + (self.y * other.y) + (self.z * other.z) 
-
-    def cross(self, other):
-        if not isinstance(other, Vector):
-            return NotImplemented
-
-        return Vector(
-                self.y*other.z - self.z*other.y,
-              self.z*other.x - self.x*other.z, 
-              self.x*other.y - self.y*other.x
-            )
-
-    def __repr__(self):
-        return f"Vector({self.x}, {self.y}, {self.z})"
